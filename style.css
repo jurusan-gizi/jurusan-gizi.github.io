@@ -1,0 +1,189 @@
+:root {
+  --teal: #00807e;
+  --teal-tua: #00625f;
+  --teal-muda: #e3f2f1;
+  --lime: #c4e85c;
+  --tinta: #12302f;
+  --abu: #5d7473;
+  --garis: #d7e5e4;
+  --latar: #f3f7f7;
+  --putih: #ffffff;
+  --merah: #c2410c;
+  --radius: 16px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--latar);
+  color: var(--tinta);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+
+/* ---------- Kop ---------- */
+.kop {
+  background: var(--teal);
+  color: #fff;
+  padding: calc(14px + env(safe-area-inset-top)) 16px 54px;
+}
+.kop-isi { max-width: 640px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+.logo { border-radius: 10px; box-shadow: 0 0 0 2px rgba(255,255,255,.25); }
+.eyebrow { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; opacity: .85; font-weight: 600; }
+.kop h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+
+main { flex: 1; width: 100%; max-width: 640px; margin: -38px auto 0; padding: 0 16px 24px; }
+
+.kartu {
+  background: var(--putih);
+  border: 1px solid var(--garis);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 6px 24px rgba(18, 48, 47, .06);
+}
+
+/* ---------- Login ---------- */
+.sambut {
+  background: var(--putih);
+  border-radius: var(--radius) var(--radius) 0 0;
+  border: 1px solid var(--garis);
+  border-bottom: 0;
+  padding: 20px 20px 4px;
+}
+.sambut h2 { margin: 0 0 4px; font-size: 19px; font-weight: 800; line-height: 1.3; }
+.sambut p { margin: 0; color: var(--abu); font-size: 14px; }
+#layar-masuk .kartu { border-top-left-radius: 0; border-top-right-radius: 0; border-top: 0; }
+
+form label { display: block; font-size: 13px; font-weight: 700; margin: 14px 0 6px; }
+input, select {
+  width: 100%;
+  font: inherit;
+  font-size: 16px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--garis);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--tinta);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+input:focus, select:focus { border-color: var(--teal); box-shadow: 0 0 0 4px var(--teal-muda); }
+#nim { letter-spacing: .04em; font-weight: 600; }
+.tgl-grup { display: grid; grid-template-columns: 1fr 1.6fr 1.2fr; gap: 8px; }
+
+.btn {
+  font: inherit;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn.utama {
+  width: 100%;
+  margin-top: 18px;
+  padding: 14px;
+  background: var(--teal);
+  color: #fff;
+  font-size: 16px;
+}
+.btn.utama:hover { background: var(--teal-tua); }
+.btn:disabled { opacity: .7; cursor: progress; }
+.btn.teks { background: none; color: var(--merah); padding: 8px 10px; font-size: 14px; }
+.btn.teks:hover { background: #fff1ea; }
+
+.bantu { color: var(--abu); font-size: 13px; margin: 12px 0 0; line-height: 1.5; }
+.pesan {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff1ea;
+  color: var(--merah);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---------- Dashboard ---------- */
+.profil { display: flex; align-items: center; gap: 14px; }
+.avatar {
+  width: 52px; height: 52px; flex: none;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--tinta);
+  display: grid; place-items: center;
+  font-weight: 800; font-size: 18px;
+}
+.profil-teks { flex: 1; min-width: 0; }
+.salam { margin: 0; font-size: 13px; color: var(--abu); }
+.nama { margin: 2px 0 0; font-weight: 800; font-size: 17px; line-height: 1.25; }
+.profil .bantu { margin-top: 2px; font-size: 12.5px; overflow-wrap: anywhere; }
+
+.judul-bagian { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--abu); margin: 24px 4px 10px; }
+
+.grid-app { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+@media (min-width: 560px) { .grid-app { grid-template-columns: 1fr 1fr; } }
+
+.app {
+  --warna: var(--teal);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 100%;
+  padding: 16px;
+  background: var(--putih);
+  border: 1px solid var(--garis);
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+  position: relative;
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+}
+.app:hover, .app:focus-visible { transform: translateY(-2px); border-color: var(--warna); box-shadow: 0 10px 24px rgba(18,48,47,.08); outline: none; }
+.app:active { transform: translateY(0); }
+.app-ikon {
+  width: 52px; height: 52px; flex: none;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--warna) 14%, white);
+  border: 1.5px solid color-mix(in srgb, var(--warna) 30%, white);
+  display: grid; place-items: center;
+  font-size: 26px;
+}
+.app-teks { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.app-nama { font-weight: 800; font-size: 15.5px; }
+.app-desk { font-size: 13px; color: var(--abu); line-height: 1.4; }
+.app-tanda {
+  position: absolute; top: 10px; right: 12px;
+  font-size: 10.5px; font-weight: 700;
+  color: var(--teal); background: var(--teal-muda);
+  padding: 2px 8px; border-radius: 999px;
+}
+.app-tanda.lain { color: var(--abu); background: #eef2f2; }
+.app-teks { padding-top: 12px; }
+
+/* ---------- Lain-lain ---------- */
+.muat { display: grid; place-items: center; padding: 60px 0; }
+.putar {
+  width: 28px; height: 28px;
+  border: 3px solid var(--teal-muda);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: putar .8s linear infinite;
+  display: inline-block;
+}
+.putar.kecil { width: 16px; height: 16px; border-width: 2px; border-color: rgba(255,255,255,.4); border-top-color: #fff; }
+@keyframes putar { to { transform: rotate(360deg); } }
+code { background: var(--teal-muda); padding: 1px 5px; border-radius: 4px; }
+
+footer {
+  text-align: center;
+  color: var(--abu);
+  font-size: 12px;
+  padding: 8px 16px calc(20px + env(safe-area-inset-bottom));
+}
+footer p { margin: 4px 0; }

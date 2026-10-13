@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Gizi-Link · Kantor Virtual Mahasiswa</title>
+  <meta name="description" content="Kantor Virtual Mahasiswa Jurusan Gizi Poltekkes Kemenkes Makassar — masuk sekali untuk semua layanan.">
+  <meta name="theme-color" content="#00807e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <script src="config.js"></script>
+  <script src="sso.js"></script>
+</head>
+<body>
+  <header class="kop">
+    <div class="kop-isi">
+      <img src="icons/icon-192.png" alt="" width="40" height="40" class="logo">
+      <div>
+        <p class="eyebrow">Kantor Virtual Mahasiswa</p>
+        <h1>Gizi-Link</h1>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- LOGIN -->
+    <section id="layar-masuk" hidden>
+      <div class="sambut">
+        <h2>Masuk sekali, semua layanan terbuka</h2>
+        <p>Laboratorium, surat, dan e-Sidang Jurusan Gizi dalam satu pintu.</p>
+      </div>
+      <form id="form-masuk" class="kartu" novalidate>
+        <label for="nim">NIM</label>
+        <input id="nim" inputmode="text" autocomplete="username" autocapitalize="characters"
+               spellcheck="false" placeholder="PO714231264002" maxlength="20" required>
+
+        <label for="tgl-hari">Tanggal lahir</label>
+        <div class="tgl-grup">
+          <select id="tgl-hari" aria-label="Tanggal" required></select>
+          <select id="tgl-bulan" aria-label="Bulan" required></select>
+          <select id="tgl-tahun" aria-label="Tahun" required></select>
+        </div>
+
+        <p id="pesan" class="pesan" role="alert" hidden></p>
+        <button type="submit" id="btn-masuk" class="btn utama">Masuk</button>
+        <p class="bantu">Gunakan NIM dan tanggal lahir sesuai data akademik. Login berlaku 7 hari di perangkat ini.</p>
+      </form>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="layar-dasbor" hidden>
+      <div class="kartu profil">
+        <div class="avatar" id="avatar" aria-hidden="true"></div>
+        <div class="profil-teks">
+          <p class="salam" id="salam"></p>
+          <p class="nama" id="mhs-nama"></p>
+          <p class="bantu" id="mhs-info"></p>
+        </div>
+        <button id="btn-keluar" class="btn teks" type="button">Keluar</button>
+      </div>
+
+      <h2 class="judul-bagian">Layanan</h2>
+      <ul id="daftar-app" class="grid-app"></ul>
+      <p id="app-kosong" class="kartu bantu" hidden>Belum ada layanan yang tersedia untuk program studimu.</p>
+    </section>
+
+    <section id="layar-muat" class="muat"><span class="putar"></span></section>
+    <p id="belum-siap" class="kartu pesan" hidden>Portal belum tersambung ke server. Admin: isi <code>API_URL</code> di <code>config.js</code>.</p>
+  </main>
+
+  <footer>
+    <p>Jurusan Gizi · Poltekkes Kemenkes Makassar</p>
+    <p>Jangan bagikan tanggal lahirmu. Tekan <strong>Keluar</strong> bila memakai perangkat bersama.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
