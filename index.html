@@ -3,91 +3,95 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Cari Surat Mahasiswa</title>
-  <meta name="description" content="Cari dan unduh surat akademik mahasiswa Jurusan Gizi Poltekkes Kemenkes Makassar.">
+  <title>Gizi-Link · Kantor Virtual Mahasiswa</title>
+  <meta name="description" content="Kantor Virtual Mahasiswa Jurusan Gizi Poltekkes Kemenkes Makassar — masuk sekali untuk semua layanan.">
   <meta name="theme-color" content="#00807e">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="style.css">
   <script src="config.js"></script>
-  <script src="https://jurusan-gizi.github.io/sso.js"></script>
+  <script src="sso.js"></script>
 </head>
 <body>
   <header class="kop">
     <div class="kop-isi">
-      <img src="icons/icon-192.png" alt="" class="logo" width="40" height="40">
+      <img src="icons/icon-192.png" alt="" width="40" height="40" class="logo">
       <div>
-        <h1 id="judul-app">Cari Surat Mahasiswa</h1>
-        <p id="nama-instansi" class="instansi"></p>
+        <p class="eyebrow">Kantor Virtual Mahasiswa</p>
+        <h1>Gizi-Link</h1>
       </div>
     </div>
   </header>
 
   <main>
-    <!-- LANGKAH 1: verifikasi -->
-    <section id="layar-cari" class="kartu">
-      <h2>Masuk dengan NIM</h2>
-      <p class="bantu">Masukkan NIM dan tanggal lahir sesuai data akademik untuk melihat surat milikmu.</p>
-      <form id="form-cari" novalidate>
-        <label for="nim">NIM</label>
-        <input id="nim" name="nim" inputmode="text" autocomplete="off" autocapitalize="characters"
-               spellcheck="false" placeholder="PO714231264002" maxlength="20" required>
-
-        <label for="tgl">Tanggal lahir</label>
-        <div class="tgl-grup">
-          <select id="tgl-hari" aria-label="Tanggal" required></select>
-          <select id="tgl-bulan" aria-label="Bulan" required></select>
-          <select id="tgl-tahun" aria-label="Tahun" required></select>
+    <!-- LOGIN -->
+    <section id="layar-masuk" hidden>
+      <div class="sambut">
+        <h2>Masuk sekali, semua layanan terbuka</h2>
+        <p>Laboratorium, surat, dan e-Sidang Jurusan Gizi dalam satu pintu.</p>
+      </div>
+      <form id="form-masuk" class="kartu" novalidate>
+        <div class="seg" role="tablist" aria-label="Masuk sebagai">
+          <button type="button" role="tab" data-mode="mahasiswa" aria-selected="true">Mahasiswa</button>
+          <button type="button" role="tab" data-mode="staf" aria-selected="false">Dosen / Staf</button>
         </div>
 
-        <p id="pesan-cari" class="pesan" role="alert" hidden></p>
-        <button type="submit" id="btn-cari" class="btn utama">Cari surat saya</button>
+        <div id="isian-mhs">
+          <label for="nim">NIM</label>
+          <input id="nim" inputmode="text" autocomplete="username" autocapitalize="characters"
+                 spellcheck="false" placeholder="PO714231264002" maxlength="20">
+
+          <label for="tgl-hari">Tanggal lahir</label>
+          <div class="tgl-grup">
+            <select id="tgl-hari" aria-label="Tanggal"></select>
+            <select id="tgl-bulan" aria-label="Bulan"></select>
+            <select id="tgl-tahun" aria-label="Tahun"></select>
+          </div>
+        </div>
+
+        <div id="isian-staf" hidden>
+          <label for="staf-id">NIP / ID pengguna</label>
+          <input id="staf-id" inputmode="text" autocomplete="username" spellcheck="false" placeholder="mis. 19800101 200501 1 001">
+
+          <label for="staf-pin">PIN</label>
+          <input id="staf-pin" type="password" autocomplete="current-password" placeholder="PIN pribadi">
+        </div>
+
+        <p id="pesan" class="pesan" role="alert" hidden></p>
+        <button type="submit" id="btn-masuk" class="btn utama">Masuk</button>
+        <p class="bantu" id="bantu-masuk">Gunakan NIM dan tanggal lahir sesuai data akademik. Login berlaku 7 hari di perangkat ini.</p>
       </form>
-      <button type="button" id="btn-gizilink" class="btn sekunder" style="width:100%;margin-top:10px">Masuk lewat Gizi-Link (login sekali)</button>
     </section>
 
-    <!-- LANGKAH 2: daftar surat -->
-    <section id="layar-hasil" hidden>
+    <!-- DASHBOARD -->
+    <section id="layar-dasbor" hidden>
       <div class="kartu profil">
-        <div>
-          <p class="label-kecil">Mahasiswa</p>
-          <p id="mhs-nama" class="nama"></p>
-          <p id="mhs-info" class="bantu"></p>
+        <div class="avatar" id="avatar" aria-hidden="true"></div>
+        <div class="profil-teks">
+          <p class="salam" id="salam"></p>
+          <p class="nama" id="mhs-nama"></p>
+          <p class="bantu" id="mhs-info"></p>
         </div>
         <button id="btn-keluar" class="btn teks" type="button">Keluar</button>
       </div>
 
-      <div class="judul-daftar">
-        <h2>Surat saya</h2>
-        <span id="jumlah" class="badge-jumlah"></span>
-      </div>
-      <ul id="daftar-surat" class="daftar"></ul>
-      <div id="kosong" class="kartu kosong" hidden>
-        <p><strong>Belum ada surat untuk NIM ini.</strong></p>
-        <p class="bantu" id="kontak-admin"></p>
-      </div>
+      <h2 class="judul-bagian">Layanan</h2>
+      <ul id="daftar-app" class="grid-app"></ul>
+      <p id="app-kosong" class="kartu bantu" hidden>Belum ada layanan yang tersedia untuk program studimu.</p>
     </section>
+
+    <section id="layar-muat" class="muat"><span class="putar"></span></section>
+    <p id="belum-siap" class="kartu pesan" hidden>Portal belum tersambung ke server. Admin: isi <code>API_URL</code> di <code>config.js</code>.</p>
   </main>
 
-  <!-- Penampil PDF -->
-  <div id="penampil" class="penampil" hidden role="dialog" aria-modal="true" aria-labelledby="penampil-judul">
-    <div class="penampil-kotak">
-      <div class="penampil-atas">
-        <p id="penampil-judul"></p>
-        <button id="btn-tutup" class="btn ikon" type="button" aria-label="Tutup">✕</button>
-      </div>
-      <iframe id="pdf-frame" title="Pratinjau surat"></iframe>
-      <p id="info-hp" class="bantu info-hp">Pratinjau tidak tersedia di HP. Ketuk <strong>Buka</strong> atau <strong>Unduh</strong>.</p>
-      <div class="penampil-aksi">
-        <a id="btn-buka" class="btn sekunder" target="_blank" rel="noopener">Buka</a>
-        <a id="btn-unduh" class="btn utama">Unduh PDF</a>
-      </div>
-    </div>
-  </div>
-
-  <div id="offline" class="offline" hidden>Tidak ada koneksi internet</div>
-  <footer>Data hanya ditampilkan untuk pemilik NIM. Jangan bagikan tanggal lahirmu kepada orang lain.</footer>
+  <footer>
+    <p>Jurusan Gizi · Poltekkes Kemenkes Makassar</p>
+    <p>Jangan bagikan tanggal lahirmu. Tekan <strong>Keluar</strong> bila memakai perangkat bersama.</p>
+  </footer>
 
   <script src="app.js"></script>
 </body>

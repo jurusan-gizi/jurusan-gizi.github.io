@@ -5,7 +5,9 @@
  *   <script src="https://jurusan-gizi.github.io/sso.js"></script>
  *
  * Pemakaian:
- *   GiziSSO.get()          → { token, nim, nama, prodi, kelas, angkatan, exp } atau null
+ *   GiziSSO.get()          → MAHASISWA: { token, nim, nama, prodi, kelas, angkatan, exp } atau null
+ *   GiziSSO.getStaf()      → DOSEN/STAF: { token, id, nama, silab, esidang, exp } atau null
+ *   GiziSSO.masuk(url, 'staf') → buka portal di tab Dosen/Staf
  *   GiziSSO.masuk()        → buka portal untuk login, lalu kembali ke halaman ini
  *   GiziSSO.keluar()       → keluar dari SEMUA aplikasi di perangkat ini
  *   GiziSSO.wajib()        → sama dengan get(), tapi langsung ke portal kalau belum login
@@ -37,7 +39,7 @@
   function isiToken(token) {
     try {
       var p = JSON.parse(decodeBase64Url(String(token).split('.')[0]));
-      return p && p.nim ? p : null;
+      return p && (p.nim || (p.jenis === 'staf' && p.id)) ? p : null;
     } catch (e) { return null; }
   }
 
@@ -53,7 +55,7 @@
     } catch (e) { }
   })();
 
-  function get() {
+  function baca() {
     var token = bacaLokal(KUNCI);
     if (!token) return null;
     var p = isiToken(token);
@@ -62,13 +64,25 @@
     return p;
   }
 
-  function simpan(token) { if (isiToken(token)) simpanLokal(KUNCI, token); }
-
-  function urlMasuk(kembali) {
-    return PORTAL + '?kembali=' + encodeURIComponent(kembali || location.href);
+  /** Login mahasiswa saja (aplikasi lama memakai ini). */
+  function get() {
+    var p = baca();
+    return p && p.nim && p.jenis !== 'staf' ? p : null;
   }
 
-  function masuk(kembali) { location.href = urlMasuk(kembali); }
+  /** Login dosen/staf saja. */
+  function getStaf() {
+    var p = baca();
+    return p && p.jenis === 'staf' ? p : null;
+  }
+
+  function simpan(token) { if (isiToken(token)) simpanLokal(KUNCI, token); }
+
+  function urlMasuk(kembali, mode) {
+    return PORTAL + '?kembali=' + encodeURIComponent(kembali || location.href) + (mode === 'staf' ? '&mode=staf' : '');
+  }
+
+  function masuk(kembali, mode) { location.href = urlMasuk(kembali, mode); }
 
   /** Keluar dari semua aplikasi. kePortal=false → tetap di halaman ini. */
   function keluar(kePortal) {
@@ -89,7 +103,7 @@
   }
 
   w.GiziSSO = {
-    PORTAL: PORTAL, get: get, simpan: simpan, masuk: masuk, urlMasuk: urlMasuk,
+    PORTAL: PORTAL, get: get, getStaf: getStaf, sesi: baca, simpan: simpan, masuk: masuk, urlMasuk: urlMasuk,
     keluar: keluar, wajib: wajib, normNim: normNim, isiToken: isiToken
   };
 })(window);
