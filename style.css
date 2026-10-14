@@ -199,3 +199,4 @@ footer {
   padding: 8px 16px calc(20px + env(safe-area-inset-bottom));
 }
 footer p { margin: 4px 0; }
+.app-tanda.baru { color: #fff; background: #c2410c; }

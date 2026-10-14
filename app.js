@@ -148,10 +148,24 @@
       link.querySelector('.app-tanda').classList.toggle('lain', !a.sso);
       li.appendChild(link);
       ul.appendChild(li);
+      if (a.badge) muatBadge(a.badge, s.token, link.querySelector('.app-tanda'));
     });
     $('app-kosong').hidden = apps.length > 0;
     if (res.gagal) { $('app-kosong').hidden = false; $('app-kosong').textContent = 'Daftar layanan gagal dimuat. Periksa koneksi lalu muat ulang halaman.'; }
     tampil('dasbor');
+  }
+
+  /** Angka pemberitahuan di kotak aplikasi (mis. "3 baru"), diambil dari server aplikasinya. */
+  async function muatBadge(url, token, el) {
+    try {
+      const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ aksi: 'badge', token }) });
+      const d = await r.json();
+      if (d && d.ok && Number(d.jumlah) > 0) {
+        el.textContent = `${Number(d.jumlah)} ${d.label || 'baru'}`;
+        el.classList.remove('lain');
+        el.classList.add('baru');
+      }
+    } catch (e) { /* abaikan: badge hanya pelengkap */ }
   }
 
   /** Alamat ?kembali= hanya diikuti bila menuju domain ini atau aplikasi terdaftar. */
