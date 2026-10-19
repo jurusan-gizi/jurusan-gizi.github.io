@@ -102,6 +102,39 @@
     return String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/O/g, '0');
   }
 
+  /**
+   * Tombol "kembali ke Gizi-Link" yang melayang di pojok kanan bawah setiap aplikasi.
+   * Muncul hanya bila sedang masuk Gizi-Link, bukan di halaman portal sendiri,
+   * dan bila aplikasi belum punya tautan ke portal (mis. Layanan Permohonan).
+   * Aplikasi yang tidak ingin tombol ini cukup menambah atribut data-tanpa-gizilink pada <body>.
+   */
+  function pasangTombolPortal() {
+    try {
+      if (!baca() || w.top !== w.self) return;
+      if (location.origin + location.pathname === PORTAL || location.origin + location.pathname === PORTAL + 'index.html') return;
+      if (document.body.hasAttribute('data-tanpa-gizilink')) return;
+      if (document.querySelector('a[href="' + PORTAL + '"]')) return;
+      var a = document.createElement('a');
+      a.href = PORTAL;
+      a.id = 'gizilink-pulang';
+      a.title = 'Kembali ke menu utama Gizi-Link';
+      a.setAttribute('aria-label', 'Kembali ke menu utama Gizi-Link');
+      a.innerHTML = '<span aria-hidden="true" style="font-size:15px;line-height:1">&#8962;</span><span>Gizi-Link</span>';
+      a.style.cssText = 'position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:2147483000;' +
+        'display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:999px;' +
+        'background:#00807e;color:#fff;font:700 13px/1 system-ui,-apple-system,"Segoe UI",sans-serif;' +
+        'text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.22);opacity:.92';
+      a.onmouseenter = function () { a.style.opacity = '1'; };
+      a.onmouseleave = function () { a.style.opacity = '.92'; };
+      document.body.appendChild(a);
+      var css = document.createElement('style');
+      css.textContent = '@media print{#gizilink-pulang{display:none!important}}';
+      document.head.appendChild(css);
+    } catch (e) { }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pasangTombolPortal);
+  else pasangTombolPortal();
+
   w.GiziSSO = {
     PORTAL: PORTAL, get: get, getStaf: getStaf, sesi: baca, simpan: simpan, masuk: masuk, urlMasuk: urlMasuk,
     keluar: keluar, wajib: wajib, normNim: normNim, isiToken: isiToken
