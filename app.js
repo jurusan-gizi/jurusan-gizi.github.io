@@ -119,7 +119,7 @@
     $('salam').textContent = salamWaktu() + ',';
     $('mhs-nama').textContent = s.nama || '-';
     if (s.jenis === 'staf') {
-      const peran = [s.esidang === 'admin' ? 'Admin e-Sidang' : s.esidang === 'dosen' ? 'Dosen' : '', s.silab ? 'SILAB' : ''].filter(Boolean);
+      const peran = [s.jabatan || '', s.esidang === 'admin' ? 'Admin e-Sidang' : s.esidang === 'dosen' ? 'Dosen' : '', s.silab ? 'SILAB' : ''].filter(Boolean);
       $('mhs-info').textContent = ['Dosen / Staf', s.id].concat(peran).join(' · ');
     } else {
       $('mhs-info').textContent = [s.nim, s.prodi, s.kelas].filter(Boolean).join(' · ');
