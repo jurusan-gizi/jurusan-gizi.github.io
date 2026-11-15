@@ -14,13 +14,37 @@
   document.querySelectorAll('.seg [data-mode]').forEach((b) => b.addEventListener('click', () => pilihMode(b.dataset.mode)));
   pilihMode(mode);
   $('form-masuk').addEventListener('submit', onMasuk);
-  $('btn-keluar').addEventListener('click', () => { SSO.keluar(false); tampil('masuk'); });
+  $('btn-keluar').addEventListener('click', () => { SSO.keluar(false); tutupApp(); tutupLaci(); tampil('masuk'); });
+
+  // ----- Tampilan dasbor: menu kiri (laptop) / laci ☰ (HP) -----
+  const LEBAR = window.matchMedia('(min-width: 900px)');
+  const DI_BINGKAI = window.top !== window.self;   // portal terbuka di dalam panel aplikasi Gizi-Link
+  let APPS = [], SESI = null, AKTIF = '';
+  const ST = { tab: bacaPilihan('gizilink_tab_prodi') || 'd3', cplPenuh: false };
+  $('btn-laci').addEventListener('click', bukaLaci);
+  $('btn-tutup-laci').addEventListener('click', tutupLaci);
+  $('tirai').addEventListener('click', tutupLaci);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') tutupLaci(); });
+  $('bingkai').addEventListener('load', () => { $('muat-app').hidden = true; });
+  LEBAR.addEventListener('change', () => { tutupLaci(); if (SESI && !AKTIF) gambarProfil(); });
+  // Aplikasi di dalam panel yang "kembali ke Gizi-Link" atau keluar → panel induk menampilkan Beranda / login.
+  window.addEventListener('message', (e) => {
+    if (e.origin !== location.origin || !e.data || !e.data.gizilink) return;
+    if (!SSO.sesi()) { tutupApp(); tutupLaci(); return tampil('masuk'); }
+    tampilBeranda();
+  });
 
   mulai();
 
   async function mulai() {
     if (!CFG.API_URL) { tampil(null); $('belum-siap').hidden = false; return; }
     const s = SSO.sesi();
+    if (DI_BINGKAI && (!s || !kembali)) {
+      // Jangan menumpuk portal di dalam portal: serahkan ke halaman induk.
+      try { window.parent.postMessage({ gizilink: s ? 'beranda' : 'keluar' }, location.origin); } catch (e) { }
+      tampil(null);
+      return;
+    }
     if (!s) return tampil('masuk');
     await bukaDasbor(s);
   }
@@ -115,17 +139,25 @@
     const tujuan = alamatKembali(apps);
     if (tujuan) { location.replace(denganToken(tujuan, s.token, true)); return; }
 
+    APPS = apps; SESI = s;
     const namaDepan = String(s.nama || '').split(/[\s,]+/)[0] || 'Mahasiswa';
-    $('salam').textContent = salamWaktu() + ',';
-    $('mhs-nama').textContent = s.nama || '-';
+    let info;
     if (s.jenis === 'staf') {
       const peran = [s.jabatan || '', s.esidang === 'admin' ? 'Admin e-Sidang' : s.esidang === 'dosen' ? 'Dosen' : '', s.silab ? 'SILAB' : ''].filter(Boolean);
-      $('mhs-info').textContent = ['Dosen / Staf', s.id].concat(peran).join(' · ');
+      info = ['Dosen / Staf', s.id].concat(peran).join(' · ');
     } else {
-      $('mhs-info').textContent = [s.nim, s.prodi, s.kelas].filter(Boolean).join(' · ');
+      info = [s.nim, s.prodi, s.kelas].filter(Boolean).join(' · ');
     }
-    $('avatar').textContent = inisial(s.nama || namaDepan);
+    $('salam').textContent = salamWaktu() + ',';
+    ['mhs-nama', 'nama-hp'].forEach((id) => { $(id).textContent = s.nama || '-'; });
+    ['mhs-info', 'info-hp'].forEach((id) => { $(id).textContent = info; });
+    ['avatar', 'avatar-hp'].forEach((id) => { $(id).textContent = inisial(s.nama || namaDepan); });
+    $('sapa').textContent = `${salamWaktu()}, ${namaDepan} 👋`;
+    $('sapa-sub').textContent = s.jenis === 'staf'
+      ? 'Visi, misi, profil lulusan, dan CPL ketiga program studi Jurusan Gizi.'
+      : 'Kenali arah program studimu: visi, misi, profil lulusan, dan capaian pembelajaran.';
 
+    // Kartu layanan (tampil di HP)
     const ul = $('daftar-app');
     ul.innerHTML = '';
     apps.forEach((a) => {
@@ -133,6 +165,7 @@
       const link = document.createElement('a');
       link.className = 'app';
       link.href = denganToken(a.url, s.token, a.sso);
+      if (!seAsal(a.url)) { link.target = '_blank'; link.rel = 'noopener'; }
       link.style.setProperty('--warna', a.warna);
       link.innerHTML = `
         <span class="app-ikon" aria-hidden="true"></span>
@@ -146,17 +179,160 @@
       link.querySelector('.app-desk').textContent = a.deskripsi || '';
       link.querySelector('.app-tanda').textContent = a.sso ? 'Langsung masuk' : 'Login terpisah';
       link.querySelector('.app-tanda').classList.toggle('lain', !a.sso);
+      link.addEventListener('click', (e) => pilihApp(a, e));
       li.appendChild(link);
       ul.appendChild(li);
-      if (a.badge) muatBadge(a.badge, s.token, link.querySelector('.app-tanda'));
+      if (a.badge) muatBadge(a.badge, s.token, link.querySelector('.app-tanda'), a.id);
     });
     $('app-kosong').hidden = apps.length > 0;
     if (res.gagal) { $('app-kosong').hidden = false; $('app-kosong').textContent = 'Daftar layanan gagal dimuat. Periksa koneksi lalu muat ulang halaman.'; }
+
+    gambarMenu();
+    gambarProfil();
     tampil('dasbor');
+    // Buka lagi aplikasi terakhir (alamat #app=...) bila di layar lebar
+    const awal = (location.hash.match(/(?:^#|&)app=([^&]+)/) || [])[1];
+    const appAwal = awal && apps.find((a) => a.id === decodeURIComponent(awal));
+    if (appAwal && LEBAR.matches && seAsal(appAwal.url)) bukaApp(appAwal); else tampilBeranda(true);
+  }
+
+  // ---------- Menu kiri / laci ----------
+  function seAsal(url) { try { return new URL(url, location.href).origin === location.origin; } catch (e) { return false; } }
+
+  function gambarMenu() {
+    const nav = $('menu');
+    nav.innerHTML = '';
+    const tombol = (a) => {
+      const el = document.createElement('a');
+      el.className = 'menu-item';
+      el.dataset.id = a ? a.id : '';
+      el.href = a ? denganToken(a.url, SESI.token, a.sso) : './';
+      if (a && !seAsal(a.url)) { el.target = '_blank'; el.rel = 'noopener'; }
+      el.innerHTML = '<span class="menu-ikon" aria-hidden="true"></span><span class="menu-nama"></span><span class="menu-tanda" hidden></span>';
+      el.querySelector('.menu-ikon').textContent = a ? a.ikon : '🏠';
+      el.querySelector('.menu-nama').textContent = a ? a.nama : 'Beranda';
+      if (a && !seAsal(a.url)) { const t = el.querySelector('.menu-tanda'); t.hidden = false; t.textContent = '↗'; t.classList.add('luar'); }
+      el.addEventListener('click', (e) => pilihApp(a, e));
+      return el;
+    };
+    const judul = (t) => { const h = document.createElement('p'); h.className = 'menu-judul'; h.textContent = t; return h; };
+    nav.appendChild(tombol(null));
+    const dalam = APPS.filter((a) => seAsal(a.url)), luar = APPS.filter((a) => !seAsal(a.url));
+    if (dalam.length) { nav.appendChild(judul('Aplikasi Jurusan')); dalam.forEach((a) => nav.appendChild(tombol(a))); }
+    if (luar.length) { nav.appendChild(judul('Aplikasi luar · tab baru')); luar.forEach((a) => nav.appendChild(tombol(a))); }
+    tandaiMenu();
+  }
+
+  function tandaiMenu() {
+    document.querySelectorAll('#menu .menu-item').forEach((el) => {
+      if (el.dataset.id === AKTIF) el.setAttribute('aria-current', 'page'); else el.removeAttribute('aria-current');
+    });
+  }
+
+  /** Klik menu / kartu: laptop → aplikasi jurusan tampil di panel kanan; HP → halaman penuh; aplikasi luar → tab baru. */
+  function pilihApp(a, e) {
+    tutupLaci();
+    if (!a) { e.preventDefault(); return tampilBeranda(); }
+    if (!seAsal(a.url)) return;                 // biarkan tautan membuka tab baru
+    if (!LEBAR.matches) return;                 // HP: navigasi biasa (satu layar penuh)
+    e.preventDefault();
+    bukaApp(a);
+  }
+
+  function bukaApp(a) {
+    AKTIF = a.id;
+    $('beranda').hidden = true;
+    $('muat-app').hidden = false;
+    const f = $('bingkai');
+    f.hidden = false;
+    f.title = a.nama;
+    f.src = denganToken(a.url, SESI.token, a.sso);
+    try { history.replaceState(null, '', '#app=' + encodeURIComponent(a.id)); } catch (e) { }
+    tandaiMenu();
+  }
+
+  function tutupApp() {
+    AKTIF = '';
+    const f = $('bingkai');
+    if (!f.hidden) { f.hidden = true; f.src = 'about:blank'; }
+    $('muat-app').hidden = true;
+  }
+
+  function tampilBeranda(tanpaGulir) {
+    tutupApp();
+    $('beranda').hidden = false;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { }
+    tandaiMenu();
+    if (!tanpaGulir) { $('panel').scrollTop = 0; window.scrollTo(0, 0); }
+  }
+
+  function bukaLaci() { $('sisi').classList.add('buka'); $('tirai').hidden = false; }
+  function tutupLaci() { $('sisi').classList.remove('buka'); $('tirai').hidden = true; }
+
+  // ---------- Beranda: profil program studi ----------
+  function bacaPilihan(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function simpanPilihan(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  /** "D4 - Gizi dan Dietetika" → d4 · "D3 - Gizi" → d3 · "Prof - ..." → prof */
+  function kunciProdi(prodi) {
+    const p = String(prodi || '').toLowerCase();
+    if (/prof|dietisien/.test(p)) return 'prof';
+    if (/d4|d-?iv|sarjana terapan|dietetika/.test(p)) return 'd4';
+    if (/d3|d-?iii|diploma/.test(p)) return 'd3';
+    return '';
+  }
+
+  function gambarProfil() {
+    const data = window.PROFIL_PRODI;
+    const wadah = $('profil-prodi'), tab = $('tab-prodi');
+    if (!data || !SESI) { wadah.innerHTML = ''; tab.hidden = true; $('judul-profil').hidden = true; return; }
+    const staf = SESI.jenis === 'staf';
+    let k = staf ? ST.tab : kunciProdi(SESI.prodi);
+    if (!data.PRODI[k]) k = staf ? 'd3' : '';
+    if (!k) { wadah.innerHTML = ''; tab.hidden = true; $('judul-profil').hidden = true; return; }
+    // Dosen/staf: tab ketiga prodi
+    tab.hidden = !staf;
+    if (staf) {
+      tab.innerHTML = Object.keys(data.PRODI).map((x) =>
+        `<button type="button" data-tab="${x}" aria-pressed="${x === k}">${esc(data.PRODI[x].pendek)}</button>`).join('');
+      tab.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
+        ST.tab = b.dataset.tab; simpanPilihan('gizilink_tab_prodi', ST.tab); gambarProfil();
+      }));
+    }
+    const p = data.PRODI[k], lebar = LEBAR.matches;
+    const unggul = ST.cplPenuh ? data.KEUNGGULAN.lengkap : data.KEUNGGULAN.ringkas;
+    wadah.innerHTML = `
+      <section class="prodi-hero">
+        <h3>${esc(p.nama)}</h3>
+        <div class="prodi-chip">${(p.chip || []).map((c) => `<span>${esc(c)}</span>`).join('')}${p.akre ? `<span class="akre">${esc(p.akre)}</span>` : ''}</div>
+      </section>
+      <details class="bagian" open>
+        <summary><span class="bagian-ikon" aria-hidden="true">🎯</span>Visi &amp; Misi</summary>
+        <div class="bagian-isi">
+          <p class="visi">“${esc(p.visi)}”</p>
+          <p class="sub-judul">Misi</p>
+          <ol class="misi">${p.misi.map((m) => `<li>${esc(m)}</li>`).join('')}</ol>
+        </div>
+      </details>
+      <details class="bagian" ${lebar ? 'open' : ''}>
+        <summary><span class="bagian-ikon" aria-hidden="true">🧑‍⚕️</span>Profil Lulusan <small>(${p.profil.length})</small></summary>
+        <div class="bagian-isi"><div class="profil-grid">${p.profil.map((x) => `<div><b>${esc(x[0])}</b><p>${esc(x[1])}</p></div>`).join('')}</div></div>
+      </details>
+      <details class="bagian" id="bagian-cpl" ${lebar || ST.cplDibuka ? 'open' : ''}>
+        <summary><span class="bagian-ikon" aria-hidden="true">📚</span>Capaian Pembelajaran Lulusan (CPL) <small>(${p.cpl.length})</small></summary>
+        <div class="bagian-isi">
+          <button type="button" class="tombol-cpl" id="btn-cpl">${ST.cplPenuh ? 'Tampilkan ringkas' : 'Tampilkan rumusan lengkap'}</button>
+          <ol class="cpl">${p.cpl.map((t) => `<li>${esc(String(t).replace('{K}', unggul))}</li>`).join('')}</ol>
+          <p class="sumber">Sumber: ${esc(data.SUMBER_CPL || '')}</p>
+        </div>
+      </details>`;
+    $('judul-profil').hidden = false;
+    $('btn-cpl').addEventListener('click', () => { ST.cplPenuh = !ST.cplPenuh; ST.cplDibuka = true; gambarProfil(); });
   }
 
   /** Angka pemberitahuan di kotak aplikasi (mis. "3 baru"), diambil dari server aplikasinya. */
-  async function muatBadge(url, token, el) {
+  async function muatBadge(url, token, el, id) {
     try {
       const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ aksi: 'badge', token }) });
       const d = await r.json();
@@ -164,6 +340,8 @@
         el.textContent = `${Number(d.jumlah)} ${d.label || 'baru'}`;
         el.classList.remove('lain');
         el.classList.add('baru');
+        const m = document.querySelector(`#menu .menu-item[data-id="${CSS.escape(id || '')}"] .menu-tanda`);
+        if (m) { m.hidden = false; m.textContent = el.textContent; m.classList.add('baru'); }
       }
     } catch (e) { /* abaikan: badge hanya pelengkap */ }
   }
@@ -211,6 +389,8 @@
     $('layar-muat').hidden = layar !== null;
     $('layar-masuk').hidden = layar !== 'masuk';
     $('layar-dasbor').hidden = layar !== 'dasbor';
+    document.body.classList.toggle('mode-dasbor', layar === 'dasbor');
+    if (layar === 'masuk' && /(?:^#|&)app=/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { } }
     if (layar === 'masuk') setTimeout(() => $(mode === 'staf' ? 'staf-id' : 'nim').focus(), 50);
   }
   function pesan(t) { const p = $('pesan'); p.textContent = t; p.hidden = !t; if (t) tampil('masuk'); }

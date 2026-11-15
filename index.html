@@ -67,21 +67,63 @@
       </form>
     </section>
 
-    <!-- DASHBOARD -->
+    <!-- DASHBOARD: menu di kiri (laptop) / laci ☰ (HP) + panel Beranda / aplikasi -->
     <section id="layar-dasbor" hidden>
-      <div class="kartu profil">
-        <div class="avatar" id="avatar" aria-hidden="true"></div>
-        <div class="profil-teks">
-          <p class="salam" id="salam"></p>
-          <p class="nama" id="mhs-nama"></p>
-          <p class="bantu" id="mhs-info"></p>
+      <aside class="sisi" id="sisi" aria-label="Menu Gizi-Link">
+        <div class="sisi-merek">
+          <img src="icons/icon-192.png" alt="" width="38" height="38">
+          <div><small>Kantor Virtual</small><strong>Gizi-Link</strong></div>
+          <button type="button" class="sisi-tutup" id="btn-tutup-laci" aria-label="Tutup menu">✕</button>
         </div>
-        <button id="btn-keluar" class="btn teks" type="button">Keluar</button>
-      </div>
+        <div class="sisi-profil">
+          <div class="avatar" id="avatar" aria-hidden="true"></div>
+          <div class="sisi-profil-teks">
+            <p class="nama" id="mhs-nama"></p>
+            <p class="info" id="mhs-info"></p>
+          </div>
+        </div>
+        <nav class="menu" id="menu" aria-label="Daftar aplikasi"></nav>
+        <button id="btn-keluar" class="sisi-keluar" type="button">⎋ Keluar</button>
+      </aside>
 
-      <h2 class="judul-bagian">Layanan</h2>
-      <ul id="daftar-app" class="grid-app"></ul>
-      <p id="app-kosong" class="kartu bantu" hidden>Belum ada layanan yang tersedia untuk program studimu.</p>
+      <div class="panel" id="panel">
+        <div class="bilah-hp">
+          <img src="icons/icon-192.png" alt="" width="34" height="34">
+          <div><small>Kantor Virtual Jurusan Gizi</small><strong>Gizi-Link</strong></div>
+          <button type="button" class="burger" id="btn-laci" aria-label="Buka menu" aria-controls="sisi">☰</button>
+        </div>
+
+        <div id="beranda" class="beranda">
+          <div class="kartu profil hp-saja">
+            <div class="avatar" id="avatar-hp" aria-hidden="true"></div>
+            <div class="profil-teks">
+              <p class="salam" id="salam"></p>
+              <p class="nama" id="nama-hp"></p>
+              <p class="bantu" id="info-hp"></p>
+            </div>
+          </div>
+          <div class="sapa lebar-saja">
+            <p class="sapa-label">Beranda</p>
+            <h2 id="sapa"></h2>
+            <p id="sapa-sub"></p>
+          </div>
+
+          <div class="hp-saja">
+            <h2 class="judul-bagian">Layanan</h2>
+            <ul id="daftar-app" class="grid-app"></ul>
+          </div>
+          <p id="app-kosong" class="kartu bantu" hidden>Belum ada layanan yang tersedia untuk program studimu.</p>
+
+          <h2 class="judul-bagian hp-saja" id="judul-profil">Profil Program Studi</h2>
+          <div id="tab-prodi" class="tab-prodi" role="group" aria-label="Pilih program studi" hidden></div>
+          <div id="profil-prodi"></div>
+        </div>
+
+        <div id="muat-app" class="muat-app" hidden><span class="putar"></span></div>
+        <iframe id="bingkai" class="bingkai" title="Aplikasi" hidden
+                allow="camera; microphone; geolocation; clipboard-write; fullscreen"></iframe>
+      </div>
+      <div class="tirai" id="tirai" hidden></div>
     </section>
 
     <section id="layar-muat" class="muat"><span class="putar"></span></section>
@@ -93,6 +135,7 @@
     <p>Jangan bagikan tanggal lahirmu. Tekan <strong>Keluar</strong> bila memakai perangkat bersama.</p>
   </footer>
 
+  <script src="profil-prodi.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
